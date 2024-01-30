@@ -7,3 +7,9 @@ The routines, snippets, and main code were developed by NASA Headquarters intern
 * The LLM summarization model (LLM directory) was developed by Isabelle Hoare (NASA HQ intern 2023)
 * The GUIs were developed by Kaniyah Harris (NASA HQ intern 2023).
 
+# Code requirements
+# Code citation
+# Contact information
+Antonino Cucchiara, PhD
+NASA HQ 
+email: antonino.cucchiara@nasa.gov
