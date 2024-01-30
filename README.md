@@ -10,6 +10,6 @@ The routines, snippets, and main code were developed by NASA Headquarters intern
 # Code requirements
 # Code citation
 # Contact information
-Antonino Cucchiara, PhD.\\
-NASA HQ \\
+Antonino Cucchiara, PhD.  
+NASA HQ  
 Email: antonino.cucchiara@nasa.gov
