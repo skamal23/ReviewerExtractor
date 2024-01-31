@@ -38,6 +38,7 @@ Some files are needed to run the actual search, while others are utilized in pos
 The [version 1](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV1) was presented at the American Astronomical Society in June 2023 [Volz et al. 2023](https://ui.adsabs.harvard.edu/abs/2023AAS...24210207V/abstract).
 
 The Version 2, which is the most up to date, is presented in a publication in preparation (Volz et al. 2024).
+
 **Credits** 
 - Máire Volz
 - Mallory Helfenbein
