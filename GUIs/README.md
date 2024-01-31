@@ -1,10 +1,17 @@
+# Work In Progress#
+We developed two different Graphic User Interfaces:
+- The Reviewer Extractor import the main Expertise Finder outputs and allow the user to search it by providing searchable words or phrases
+- The Space Searcher runs the actual main Expertise Finder in the background. It has the same capabilities (inputs and kewords) of the main Jupter notebook. 
+
 # Reviewer Extractor
 
 This **Reviewer Extractor** code is from my Fall 2023 NASA internship: Expanding Diversity in the NASA Astrophysics Panel.
 
-## What it does
+## What the main code does
 
-The Reviewer Extractor allows the user to search through the Expertise Finder (version 2) outputs. It is typically a csv file (one is included in this repository) or the user can upload their own. The GUI filters the input dataframe and displays only raws that include the searched "words" under the specified column. The user can then save this filtered dataframe into a file directly to their computer.
+The Reviewer Extractor allows the user to search through the Expertise Finder (version 2) outputs. It is typically a csv file (one is included in this repository) or the user can upload their own. 
+
+This Graphic User Inteface (GUI) filters the input dataframe and displays only raws that include the searched "words" under the specified column. The user can then save this filtered dataframe into a file directly to their computer.
 
 The code will allow the user to search for words in the following columns:
 - Input Author
