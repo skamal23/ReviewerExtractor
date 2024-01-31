@@ -17,14 +17,15 @@ The Expertise Finder accesseses [NASA ADS](https://ui.adsabs.harvard.edu/) throu
 
 # History
 The routines, snippets, and main code were developed by NASA Headquarters interns in the 2022-2023 internship period: 
-* The version 1 (codeV1 directory) was developed by Máire Volz during her internship at NASA HQ in 2022-2023. 
-* The version 2 (codeV2 directory) is the **most up-to-date** version of the code and it is the **only one** that will be maintained. It was developed by Mallory Helfenbein (NASA HQ intern 2023).
-* The LLM summarization model (LLM directory) was developed by Isabelle Hoare (NASA HQ intern 2023)
-* The GUIs were developed by Kaniyah Harris (NASA HQ intern 2023).
+* The [version 1](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV1) was developed by Máire Volz during her internship at NASA HQ in 2022-2023. 
+* The [version 2](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV2)) is the **most up-to-date** version of the code and it is the **only one** that will be maintained. It was developed by Mallory Helfenbein (NASA HQ intern 2023).
+* The [LLM summarization model](https://github.com/ninoc/ReviewerExtractor/tree/main/LLM)) was developed by Isabelle Hoare (NASA HQ intern 2023)
+* The [GUIs](https://github.com/ninoc/ReviewerExtractor/tree/main/GUIs) were developed by Kaniyah Harris (NASA HQ intern 2023).
 
 # Code requirements
 The user needs an ADS API Access [Token](https://ui.adsabs.harvard.edu/help/api/), which enable unique users to access ADS. 
-Other libraries needed include: nltk and pandas version 1.5. See [here](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV1/ExpertiseFinder_README.txt) for a complete list of requirements.
+Other libraries needed include: nltk and pandas version 1.5. See [here](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV1/ExpertiseFinder_README.txt) for a complete list of requirements to run the Expertise Finder.
+Further requirements are listed in the LLM and GUIs directories. These are still **work in progress** and development is still ongoing.
 
 **Current files:**
 Some files are needed to run the actual search, while others are utilized in post-processing and expertise identification (e.g. N-grams creation): 
