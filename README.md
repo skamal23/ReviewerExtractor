@@ -18,7 +18,7 @@ The Expertise Finder accesseses [NASA ADS](https://ui.adsabs.harvard.edu/) throu
 # History
 The routines, snippets, and main code were developed by NASA Headquarters interns in the 2022-2023 internship period: 
 * The [version 1](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV1) was developed by Máire Volz during her internship at NASA HQ in 2022-2023. 
-* The [version 2](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV2)) is the **most up-to-date** version of the code and it is the **only one** that will be maintained. It was developed by Mallory Helfenbein (NASA HQ intern 2023).
+* The [version 2](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV2) is the **most up-to-date** version of the code and it is the **only one** that will be maintained. It was developed by Mallory Helfenbein (NASA HQ intern 2023).
 * The [LLM summarization model](https://github.com/ninoc/ReviewerExtractor/tree/main/LLM) was developed by Isabelle Hoare (NASA HQ intern 2023)
 * The [GUIs](https://github.com/ninoc/ReviewerExtractor/tree/main/GUIs) were developed by Kaniyah Harris (NASA HQ intern 2023).
 
