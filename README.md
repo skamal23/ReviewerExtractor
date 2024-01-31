@@ -9,7 +9,7 @@ The Reviewer Extractor is a tool that is designed to help NASA Headquarters Astr
 Using these tools we tried to reach out to possible reviewers from institutions that normally do not participate, 
 and hopefully expand the pool of applicants to NASA Astrophysics. 
 
-The code represents a version 2.0 of a previous work done by Máire Volz see [Github repository](https://github.com/maireav/NASA-Internship). <br \>
+The code represents a version 2.0 of a previous work done by Máire Volz see [Github repository](https://github.com/maireav/NASA-Internship). <br\>
 In the [examples](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV2/ADS_search.ipynb), we provide a methods of finding experts in specific matters independent from their institutions. 
 
 **Under the hood** 
