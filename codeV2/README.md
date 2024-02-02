@@ -1,7 +1,5 @@
-# NASA_Internship
-Code from my NASA internship Summer 2023 on Expanding Diversity in the NASA Astrophysics Panel
 
-**Purpose:** 
+**Purpose of this Repository** 
 This repository branch is the result of my Summer 2023 Internship at NASA Headquarters. The goals were to creat tools that will enable NASA Headquarters Astrophysics Program Scientists to 
 1) Collect data on institutional demographics of proposers and peer reviews participants (or prospective participants)
 2) To identify people's expertises based on their publication history through the NASA ADS archive.
@@ -16,6 +14,8 @@ The main aspect is the notebook called "ADS_search.ipynb". The main function can
 
 **What the User needs:**
 The user needs an ADS API Access Token (can be found here:  https://ui.adsabs.harvard.edu/help/api/), which searches the input into ADS. Other libraries needed include: nltk and pandas version 1.5. 
+
+Please look at the [Jupyter Notebook v1 of the code](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV1/ExpertiseFinder_Tutorial.ipynb) to learn about all the possible keywords.
 
 
 **Current files:**
