@@ -12,7 +12,7 @@ The main aspect is the notebook called "ADS_search.ipynb". The main function can
 
 "Under the hood", this program accesses ADS through the ADS specific API and searches for the specific data according to the user's inputs (some are mandatory and some are optional). The output is a .csv file with all the information collected via the API('First Author', 'Bibcode', 'Title', 'Publication Date', 'Keywords', 'Affiliations', and 'Abstract') and the N-grams created by our code, for visual inspection by the user. The user can then easily determine the expertise of each author ADS returned. 
 
-** TIPS To Maximize The Code Results**
+**TIPS To Maximize The Code Results**
 - Extend the year range of research as people may have published in years past
 - When using list of universities or researchers names check the output dataframe:
 1) Names may be missing because the input file had them mispelled; 2) Universities may be missing because the way they were searched was not how people wrote their affiliations in their article and so the ADS query cannot find a match (e.g. Cal Poly Pomona vs. California Politechnique Institute). Possible solutions are to try and run single searches on Names / Intitutions using different formats
