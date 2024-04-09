@@ -15,7 +15,8 @@ The main aspect is the notebook called "ADS_search.ipynb". The main function can
 **TIPS To Maximize The Code Results**
 - Extend the year range of research as people may have published in years past
 - When using list of universities or researchers names check the output dataframe:
-1) Names may be missing because the input file had them mispelled; 2) Universities may be missing because the way they were searched was not how people wrote their affiliations in their article and so the ADS query cannot find a match (e.g. Cal Poly Pomona vs. California Politechnique Institute). Possible solutions are to try and run single searches on Names / Intitutions using different formats
+1) Names may be missing because the input file had them mispelled;
+2) Universities may be missing because the way they were searched was not how people wrote their affiliations in their article and so the ADS query cannot find a match (e.g. Cal Poly Pomona vs. California Politechnique Institute). Possible solutions are to try and run single searches on Names / Intitutions using different formats
 - Perform simple searches ("CMD+F) on the excel version of the output dataframe: this will allow you to search words in the published abstracts as well and not rely only on the N-grams.
   
 **What the User needs:**
