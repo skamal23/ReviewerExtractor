@@ -129,7 +129,7 @@ def run_file_insts(filename, token, stop_dir ):
 def run_file_names(filename, token, stop_dir):
   # just a file with a list of names. Format is a single column "Last, First"
   print('I will go through each name in the list. Name should be formatted in a single column called "Last, First".\
-  We will search by default any pubblication in the past 20 years by these authors, independently of the institutions they were\
+  We will search by default any pubblication between 2003 and 2030 by these authors, independently of the institutions they were\
   affiliated to. \n')
 
   dataframe= pd.read_csv(filename)
@@ -142,7 +142,7 @@ def run_file_names(filename, token, stop_dir):
   for i in np.arange(len(dataframe)):
     print(names[i])
     data1= ads_search(name=names[i],  \
-           year='[2003 TO 2023]', token=token,stop_dir=stop_dir)
+           year='[2003 TO 2030]', token=token,stop_dir=stop_dir)
     
     
     final_df= final_df.append(data1, ignore_index= True)
