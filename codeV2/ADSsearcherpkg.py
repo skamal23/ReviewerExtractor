@@ -257,19 +257,19 @@ def ads_search(name=None, institution=None, year= None, refereed= 'property:notr
 
   # Block only name
   if value==1:
-    query = 'author:"^{}", pubdate:[2008 TO 2023]'.format(name)
+    query = 'author:"^{}", pubdate:[2008 TO 2030]'.format(name)
     print("I will search for any first author publications by %s in the last 15 years.\n" % name)
 
   # Block Only institution name
   if value==2:
-    query = 'pos(institution:"{}",1), pubdate:[2008 TO 2023]'.format(institution)
+    query = 'pos(institution:"{}",1), pubdate:[2008 TO 2030]'.format(institution)
     print("I will search for every paper who first authors is afiliated with %s and published in the past 15 years.\n" % institution)
     #print(query)
 
   # Block institution + name
   if value==3:
     #print('Value=3')
-    query = 'pos(institution:"{}",1), author:"^{}", pubdate:[2008 TO 2023]'.format(institution, name)
+    query = 'pos(institution:"{}",1), author:"^{}", pubdate:[2008 TO 2030]'.format(institution, name)
     print("I will search for every paper published by %s and afiliated with %s  in the past 15 years.\n" %(institution, name) )
     #print(query)
 
@@ -394,8 +394,8 @@ def ads_search(name=None, institution=None, year= None, refereed= 'property:notr
     if value==2:
       print('I am querying ADS in a different way, stay tuned!/n')
 
-      query = 'pos(aff:"{}",1), pubdate:[2008 TO 2023]'.format(institution)
-      print("I will search for every paper who first authors is afiliated with %s and published in the past 15 years.\n" % institution)
+      query = 'pos(aff:"{}",1), pubdate:[2008 TO 2030]'.format(institution)
+      print("I will search for every paper who first authors is afiliated with %s and published in the past 15+ years.\n" % institution)
       #print(query)
 
       #making and sending query to ADS
