@@ -12,7 +12,9 @@ Using these tools we tried to reach out to possible reviewers from institutions 
 and hopefully expand the pool of applicants to NASA Astrophysics. We also were able to identify early career scientists (e.g. postdocs) thanks to the collection
 of the indivuals' full publication record.
 
-The code represents a version 2.0 of a previous work done by Máire Volz see [Github repository](https://github.com/maireav/NASA-Internship).
+This repositories contains different versions of the previous work done by Máire Volz see [Github repository](https://github.com/maireav/NASA-Internship).
+
+
 In the [examples](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV2/ADS_search.ipynb), we provide a methods of finding experts in specific matters independent from their institutions. 
 
 **Under the hood** 
