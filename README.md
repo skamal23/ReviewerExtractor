@@ -1,5 +1,6 @@
 # ReviewerExtractor
 This repository contains the main code for the Reviewer Extractor ([Volz et al., 2024](https://ui.adsabs.harvard.edu/abs/2024RNAAS...8...69V/abstract) ).<br>
+
 **Purpose**
 
 The Reviewer Extractor is a tool that is designed to help NASA Headquarters Astrophysics Program Scientists to 
@@ -14,6 +15,7 @@ The code represents a version 2.0 of a previous work done by Máire Volz see [Gi
 In the [examples](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV2/ADS_search.ipynb), we provide a methods of finding experts in specific matters independent from their institutions. 
 
 **Under the hood** 
+
 The Expertise Finder accesseses [NASA ADS](https://ui.adsabs.harvard.edu/) through the ADS dedicated API and searches for the specific data according to the user's inputs (some are mandatory and some are optional). The output is a Pandas dataframe that can be downloaded with all the information collected via the API('First Author', 'Bibcode', 'Title', 'Publication Date', 'Keywords', 'Affiliations', and 'Abstract') and the N-grams created by our code, for visual inspection by the user. The user can then easily determine the expertise of each author ADS returned. 
 
 # History
