@@ -24,13 +24,14 @@ The Expertise Finder accesseses [NASA ADS](https://ui.adsabs.harvard.edu/) throu
 # History
 The routines, snippets, and main code were developed by NASA Headquarters interns in the 2022-2023 internship period: 
 * The [version 1](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV1) was developed by Máire Volz during her internship at NASA HQ in 2022-2023. 
-* The [version 2](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV2) is the **most up-to-date** version of the code and it is the **only one** that will be maintained. It was developed by Mallory Helfenbein (NASA HQ intern 2023).
-* The [LLM summarization model](https://github.com/ninoc/ReviewerExtractor/tree/main/LLM) was developed by Isabelle Hoare (NASA HQ intern 2023)
+* The [version 2](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV2) was developed by several other NASA HQ interns, including Mallory Helfenbein (NASA HQ intern 2023).
+* The [version 3](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV3) was developed by Iizalaarab Elhaimeur in 2024 and it is the **most updated** version of the coee.
+* The [LLM summarization model](https://github.com/ninoc/ReviewerExtractor/tree/main/LLM) was developed by Isabelle Hoare (NASA HQ intern 2023), modified in Version 3.
 * The [GUIs](https://github.com/ninoc/ReviewerExtractor/tree/main/GUIs) were developed by Kaniyah Harris (NASA HQ intern 2023).
 
 # Code requirements
 The user needs an ADS API Access [Token](https://ui.adsabs.harvard.edu/help/api/), which enable unique users to access ADS. 
-Other libraries needed include: nltk and pandas version 1.5. See [here](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV1/ExpertiseFinder_README.txt) for a complete list of requirements to run the Expertise Finder.
+Other libraries needed include: nltk, ads. See [here](https://github.com/ninoc/ReviewerExtractor/blob/main/codeV3/README.md) for a complete list of requirements to run the Expertise Finder.
 Further requirements are listed in the LLM and GUIs directories. These are still **work in progress** and development is still ongoing.
 
 **Current files:**
@@ -43,13 +44,15 @@ Some files are needed to run the actual search, while others are utilized in pos
 # Code citation
 The [version 1](https://github.com/ninoc/ReviewerExtractor/tree/main/codeV1) was presented at the American Astronomical Society in June 2023 [Volz et al. 2023](https://ui.adsabs.harvard.edu/abs/2023AAS...24210207V/abstract).
 
-The Version 2, which is the most up to date, is presented in a publication in preparation (Volz et al. 2024).
+The Version 2, is presented in a publication by [Volz et al., 2024](https://ui.adsabs.harvard.edu/abs/2024RNAAS...8...69V/abstract).
+
 
 **Credits** 
 - Máire Volz
 - Mallory Helfenbein
 - Isabelle Hoare
 - Kaniyah Harris
+- Iizalaarab Elhaimeur
 - Antonino Cucchiara, PhD
   
 # Contact information
