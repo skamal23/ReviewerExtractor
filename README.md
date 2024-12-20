@@ -1,5 +1,5 @@
 # ReviewerExtractor
-This repository contains the main code for the Reviewer Extractor ([Volz et al., 2024] (https://ui.adsabs.harvard.edu/abs/2024RNAAS...8...69V/abstract) ).<br>
+This repository contains the main code for the Reviewer Extractor ([Volz et al., 2024](https://ui.adsabs.harvard.edu/abs/2024RNAAS...8...69V/abstract) ).<br>
 **Purpose** 
 The Reviewer Extractor is a tool that is designed to help NASA Headquarters Astrophysics Program Scientists to 
 
