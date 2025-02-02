@@ -65,7 +65,7 @@ def format_year(year):
         raise ValueError("Year must be an integer, float, or a string representing a year or a year range.")
 
 def ads_search(name=None, institution=None, year=None, refereed='property:notrefereed OR property:refereed', \
-               token=None, stop_dir=None):
+               token=None, stop_dir=None, second_auth=False):
     
     final_df = pd.DataFrame()
     value = 0
@@ -83,7 +83,10 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
     # Simplified query construction
     query = ""
     if name:
-        query += f'author:"^{name}"'
+        if second_auth:
+            query += f'pos(author:"^{name}",1) OR pos(author:"{name}",2)' #f'(pos(author:"^{name}",1) OR pos(author:"{name}",2))'
+        else:
+             query += f'author:"^{name}"'
     if institution:
         query += f'pos(institution:"{institution}",1)' if query else f'pos(institution:"{institution}",1)' 
     if year:
