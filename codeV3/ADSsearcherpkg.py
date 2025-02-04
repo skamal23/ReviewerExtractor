@@ -245,6 +245,14 @@ def get_user_input(dataframe):
     if search_type == 'name':
         search_params['name_column'] = input("Name column [Name]: ") or "Name"
         search_params['year_range'] = '[2003 TO 2030]'  # Default year range
+        while True:
+            include_second = input("Do you want to include search by second author? (y/n) [n]: ").strip().lower()
+            if include_second == "":
+                include_second = "n"
+            if include_second in ["y", "n"]:
+                break
+            print("Invalid choice. Please enter 'y' for yes or 'n' for no.")
+        search_params['second_author'] = (include_second == "y")
         
     elif search_type == 'institution':
         search_params['institution_column'] = input("Institution column [Institution]: ") or "Institution"
@@ -281,14 +289,16 @@ def run_file_search(filename, token, stop_dir):
         if search_type == 'name':
             # Name-only search
             name = dataframe[search_params['name_column']][i]
+            second_auth = search_params.get('second_author', False)
             data1 = ads_search(
                 name=name,
                 institution=None,
                 year=search_params['year_range'],
                 token=token,
-                stop_dir=stop_dir
+                stop_dir=stop_dir,
+                second_auth=second_auth
             )
-            search_identifier = f"name: {name}"
+            search_identifier = f"name: {name} (including {'second' if second_auth else 'only first'} author)"
 
         elif search_type == 'institution':
             # Institution-only search
