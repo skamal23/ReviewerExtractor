@@ -214,7 +214,8 @@ def get_user_input(dataframe):
     Returns:
         dict: Dictionary containing search parameters and search type
     """
-    # Detect available columns and build search options
+    """
+       # Detect available columns and build search options
     available_searches = []
     if 'Name' in dataframe.columns:
         available_searches.append(("name", "Name Search - search by author name"))
@@ -229,40 +230,82 @@ def get_user_input(dataframe):
     for search_id, description in available_searches:
         print(f"- {description}")
 
+    """
+    available_search_types = {
+        "name": "Name Search - search by author name",
+        "institution": "Institution Search - search by institution",
+        "fellow": "Fellow Search - search by name, institution, and year"
+    }
+    
+    print("\nWhat type of search do you want to conduct?")
+    for key, description in available_search_types.items():
+        print(f"-Enter '{key}' for {description}")
+    
+
     # Get search type
     while True:
         try:
-            search_type = input("\nWhich search would you like to perform? (name/institution/fellow): ").lower()
-            if any(search_type == s[0] for s in available_searches):
+            search_type = input("\nEnter search type: ('name', 'institution', or 'fellow'):\n").lower()
+            if search_type in available_search_types:
                 break
-            print("Invalid search type. Please choose from the available options.")
+            print("Invalid search type. Please enter 'name', 'institution', or 'fellow'.")
         except NameError:
             print("Error getting input. Please try again.")
+    
+    print(f"You are running '{search_type}' search.\n")
 
+
+    print("Listed are the available columns from your dataset:", ", ".join(dataframe.columns))
     # Get relevant column names based on search type
     search_params = {'search_type': search_type}
     
     if search_type == 'name':
-        search_params['name_column'] = input("Name column [Name]: ") or "Name"
-        search_params['year_range'] = '[2003 TO 2030]'  # Default year range
+        name_input = input("Enter the name of the column that contains the data for 'name' search: ").strip()
+        if name_input:
+            matching_columns = [col for col in dataframe.columns if col.lower() == name_input.lower()]
+            search_params['name_column'] = matching_columns[0] if matching_columns else "Name"
+        else:
+            search_params['name_column'] = "Name"
+        search_params['year_range'] = '[2003 TO 2030]'
+
+        # Second author search
         while True:
-            include_second = input("Do you want to include search by second author? (y/n) [n]: ").strip().lower()
-            if include_second == "":
-                include_second = "n"
+            include_second = input("Do you want to include search by second author? (y/n) [n]: ").strip().lower() or "n"
             if include_second in ["y", "n"]:
                 break
             print("Invalid choice. Please enter 'y' for yes or 'n' for no.")
         search_params['second_author'] = (include_second == "y")
         
     elif search_type == 'institution':
-        search_params['institution_column'] = input("Institution column [Institution]: ") or "Institution"
-        search_params['year_range'] = '[2003 TO 2030]'  # Default year range
-        
+        inst_input = input("Enter the name of the column that contains the data for 'institution' search: ").strip()
+        if inst_input:
+            matching_columns = [col for col in dataframe.columns if col.lower() == inst_input.lower()]
+            search_params['institution_column'] = matching_columns[0] if matching_columns else "Institution"
+        else:
+            search_params['institution_column'] = "Institution"
+        search_params['year_range'] = '[2003 TO 2030]'
+    
     elif search_type == 'fellow':
-        search_params['name_column'] = input("Name column [Name]: ") or "Name"
-        search_params['institution_column'] = input("Institution column [Institution]: ") or "Institution"
-        search_params['year_column'] = input("Year column [Fellowship Year]: ") or "Fellowship Year"
+        name_input = input("Enter the name of the column that contains the data for 'name' search [Name]: ").strip()
+        inst_input = input("Enter the name of the column that contains the data for 'institution' search [Institution]: ").strip()
+        year_input = input("Enter the name of the column that contains the data for 'year' search [Fellowship Year]: ").strip()
+        if name_input:
+            matching_name = [col for col in dataframe.columns if col.lower() == name_input.lower()]
+            search_params['name_column'] = matching_name[0] if matching_name else "Name"
+        else:
+            search_params['name_column'] = "Name"
 
+        if inst_input:
+            matching_inst = [col for col in dataframe.columns if col.lower() == inst_input.lower()]
+            search_params['institution_column'] = matching_inst[0] if matching_inst else "Institution"
+        else:
+            search_params['institution_column'] = "Institution"
+
+        if year_input:
+            matching_year = [col for col in dataframe.columns if col.lower() == year_input.lower()]
+            search_params['year_column'] = matching_year[0] if matching_year else "Fellowship Year"
+        else:
+            search_params['year_column'] = "Fellowship Year"
     return search_params
 
 def run_file_search(filename, token, stop_dir):
@@ -283,6 +326,7 @@ def run_file_search(filename, token, stop_dir):
 
     # Get user's search preferences
     search_params = get_user_input(dataframe)
+    print("Searching for results...")
     search_type = search_params['search_type']
 
     for i in range(len(dataframe)):
