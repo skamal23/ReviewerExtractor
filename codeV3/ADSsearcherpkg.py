@@ -68,31 +68,23 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
                token=None, stop_dir=None, second_auth=False):
     
     final_df = pd.DataFrame()
-    value = 0
-    if name:
-        value = value + 1
-    if institution:
-        value = value + 2
-    if year:
-        value = value + 4
-
-    if value == 0:
-        print("You did not give me enough to search on, please try again.")
-        return final_df
-
-    # Simplified query construction
-    query = ""
+    query_parts = []
     if name:
         if second_auth:
-            query += f'pos(author:"^{name}",1) OR pos(author:"{name}",2)' #f'(pos(author:"^{name}",1) OR pos(author:"{name}",2))'
+            query_parts.append(f'(pos(author:"^{name}",1) OR pos(author:"{name}",2))')
         else:
-             query += f'author:"^{name}"'
+            query_parts.append(f'author:"^{name}"')
     if institution:
-        query += f'pos(institution:"{institution}",1)' if query else f'pos(institution:"{institution}",1)' 
+        query_parts.append(f'pos(institution:"{institution}",1)')
     if year:
         years = format_year(year)
-        query += f', pubdate:{years}' if query else f'pubdate:{years}' 
+        query_parts.append(f'pubdate:{years}')
 
+    if not query_parts:
+        print("You did not give me enough to search on, please try again.")
+        return final_df
+    
+    query = " AND ".join(query_parts)
     print(f"I will search for papers matching the following criteria:\n{query}\n")
 
     encoded_query = urlencode({
@@ -111,7 +103,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
         )
         data = results.json()["response"]["docs"]
     except:
-        print('Ooops, something went wrong.\n')
+        print('Oops, something went wrong.\n')
 
     df = do_search(name, institution, token, encoded_query)
 
@@ -119,10 +111,11 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
     if df.empty:
         print('DataFrame is empty! Trying affiliation instead of institution.')
         if institution:
-            query = 'pos(aff:"{}",1)'.format(institution)
+            query_parts = [f'pos(aff:"{institution}",1)']
             if year:
-                query += ', pubdate:{}'.format(years)
-            print(f"Trying alternative search: {query}")
+                query_parts.append(f'pubdate:{years}')
+            alt_query = " AND ".join(query_parts)
+            print(f"Trying alternative search: {alt_query}")
             encoded_query = urlencode({
                 "q": query,
                 "fl": "title, first_author, bibcode, abstract, aff, pubdate, keyword,identifier",
@@ -140,7 +133,23 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
         return data4
     else:
         print("No results found.")
-        return final_df
+        dummy_data = {
+            'Input Author': name if name else "None",
+            'Input Institution': institution if institution else "None",
+            'First Author': "None",
+            'Bibcode': "None",
+            'Title': "None",
+            'Publication Date': "None",
+            'Keywords': "None",
+            'Affiliations': "None",
+            'Abstract': "None",
+            'Identifier': "None",
+            'Data Type': "None",
+            'Top 10 Words': "None",
+            'Top 10 Bigrams': "None",
+            'Top 10 Trigrams': "None"
+        }
+        return pd.DataFrame([dummy_data])
 
 
 def data_type(df):
