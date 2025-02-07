@@ -35,7 +35,7 @@ def do_search(auth_name, inst, t, q):
         'Affiliations': affiliations,
         'Abstract': abstracts,
         'Identifier': ids,
-        'Data Type': [[]]*len(data)
+        'Data Type': ['']*len(data)
     })
 
     if auth_name is None:
@@ -134,30 +134,30 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
 
     # Run further analysis if the DataFrame is not empty
     if not df.empty:
-        data2 = data_type(df)
-        data3 = merge(data2)
+        data2 = merge(df)
+        data3 = data_type(data2)
         data4 = n_grams(data3, stop_dir)
         return data4
     else:
         print("No results found.")
         return final_df
 
+
 def data_type(df):
-    journals = ['ApJ', 'MNRAS', 'AJ', 'Nature', 'Science', 'PASP', 'AAS', 'arXiv', 'SPIE', 'A&A']
-
+    journals = ['ApJ', 'MNRAS', 'AJ', 'Nature', 'Science', 'PASP', 'AAS', 'arXiv', 'SPIE', 'A&A', 'zndo','yCat','APh', 'PhRvL']
+    df['Data Type'] = ''
     for index, row in df.iterrows():
-        flag = 0
-        if any(journal in row['Bibcode'] for journal in journals):
+        bibcodes_str = row['Bibcode']
+        bibcodes = bibcodes_str.split(', ')
+        total_papers = len(bibcodes)
+        clean_count = sum(any(journal in bibcode for journal in journals) for bibcode in bibcodes)
+        if clean_count > total_papers / 2:
             data_type_label = 'Clean'
         else:
-            flag = flag + 1
-        if row['First Author'].lower() == row['Input Author'].lower():
-            data_type_label = 'Clean'
-        else:
-            flag = flag + 2
-        df.at[index, 'Data Type'] = data_type_label if flag == 0 else 'Dirty'
+            data_type_label = 'Dirty'
+        df.at[index, 'Data Type'] = data_type_label
     return df
-
+        
 def merge(df):
     df['Publication Date'] = df['Publication Date'].astype(str)
     df['Abstract'] = df['Abstract'].astype(str)
@@ -231,6 +231,8 @@ def get_user_input(dataframe):
         print(f"- {description}")
 
     """
+    
+    
     available_search_types = {
         "name": "Name Search - search by author name",
         "institution": "Institution Search - search by institution",
@@ -375,8 +377,8 @@ def run_file_search(filename, token, stop_dir):
 
         # Process results if found
         if not data1.empty:
-            data2 = data_type(data1)
-            data3 = merge(data2)
+            data2 = merge(df)
+            data3 = data_type(data2)
             data4 = n_grams(data3, stop_dir)
             final_df = pd.concat([final_df, data4], ignore_index=True)
             count += 1
