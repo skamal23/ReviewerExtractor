@@ -3,11 +3,15 @@ from urllib.parse import urlencode
 import numpy as np
 import TextAnalysis as TA
 import itertools
-from prompt_toolkit import prompt, PromptSession
+from prompt_toolkit.shortcuts import prompt
+from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from LlamaModelV2 import generate_expertise, get_groq, string_to_list
+
 
 import pandas as pd
+
 
 def do_search(auth_name, inst, t, q):
     results = requests.get(
@@ -65,7 +69,7 @@ def format_year(year):
         raise ValueError("Year must be an integer, float, or a string representing a year or a year range.")
 
 def ads_search(name=None, institution=None, year=None, refereed='property:notrefereed OR property:refereed', \
-               token=None, stop_dir=None, second_auth=False):
+               token=None, stop_dir=None, second_auth=False,groq_analysis=False):
     
     final_df = pd.DataFrame()
     query_parts = []
@@ -130,6 +134,10 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
         data2 = merge(df)
         data3 = data_type(data2)
         data4 = n_grams(data3, stop_dir)
+        if groq_analysis:
+            print("Running Groq subtopics analysis on ADS results...")
+            data4 = generate_expertise(data4)
+            print("Groq analysis complete.")
         return data4
     else:
         print("No results found.")
@@ -160,7 +168,7 @@ def data_type(df):
         bibcodes = bibcodes_str.split(', ')
         total_papers = len(bibcodes)
         clean_count = sum(any(journal in bibcode for journal in journals) for bibcode in bibcodes)
-        if clean_count > total_papers / 2:
+        if clean_count >= total_papers / 2:
             data_type_label = 'Clean'
         else:
             data_type_label = 'Dirty'
@@ -317,6 +325,8 @@ def get_user_input(dataframe):
             search_params['year_column'] = matching_year[0] if matching_year else "Fellowship Year"
         else:
             search_params['year_column'] = "Fellowship Year"
+    run_groq = input("Do you want to run Groq subtopics analysis on the ADS results? (y/n) [n]: ").strip().lower() or "n"
+    search_params['groq_analysis'] = (run_groq == "y")
     return search_params
 
 def run_file_search(filename, token, stop_dir):
@@ -351,7 +361,8 @@ def run_file_search(filename, token, stop_dir):
                 year=search_params['year_range'],
                 token=token,
                 stop_dir=stop_dir,
-                second_auth=second_auth
+                second_auth=second_auth,
+                groq_analysis=search_params.get('groq_analysis', False)
             )
             search_identifier = f"name: {name} (including {'second' if second_auth else 'only first'} author)"
 
@@ -363,7 +374,9 @@ def run_file_search(filename, token, stop_dir):
                 institution=institution,
                 year=search_params['year_range'],
                 token=token,
-                stop_dir=stop_dir
+                stop_dir=stop_dir,
+                second_auth=second_auth,
+                groq_analysis=search_params.get('groq_analysis', False)
             )
             data1['Input Institution'] = institution
             search_identifier = f"institution: {institution}"
@@ -379,14 +392,16 @@ def run_file_search(filename, token, stop_dir):
                 institution=institution,
                 year=year,
                 token=token,
-                stop_dir=stop_dir
+                stop_dir=stop_dir,
+                second_auth=second_auth,
+                groq_analysis=search_params.get('groq_analysis', False)
             )
             data1['Input Institution'] = institution
             search_identifier = f"fellow: {name} at {institution} in {year}"
 
         # Process results if found
         if not data1.empty:
-            data2 = merge(df)
+            data2 = merge(data1)
             data3 = data_type(data2)
             data4 = n_grams(data3, stop_dir)
             final_df = pd.concat([final_df, data4], ignore_index=True)
