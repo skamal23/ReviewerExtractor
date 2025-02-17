@@ -205,7 +205,8 @@ def n_grams(df, directorypath):
         abstracts = i[8]
         top10words = TA.topwords(abstracts, directorypath)
         top10bigrams = TA.topbigrams(abstracts, directorypath)
-        top10trigrams = TA.toptrigrams(abstracts, directorypath)
+        top10trigrams = [( " ".join(trigram), count) for trigram, count in list(TA.toptrigrams(abstracts, directorypath))]
+        top10bigrams = [( " ".join(bigram), count) for bigram, count in list(TA.topbigrams(abstracts, directorypath))]
         top10Dict['Top 10 Words'].append(top10words)
         top10Dict['Top 10 Bigrams'].append(top10bigrams)
         top10Dict['Top 10 Trigrams'].append(top10trigrams)
