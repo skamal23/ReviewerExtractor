@@ -6,7 +6,7 @@ import concurrent.futures
 import os
 import itertools
 
-os.environ["GROQ_API_KEY"] = "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"
+os.environ["GROQ_API_KEY"] = "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"
 
 def string_to_list(x):
     try:
@@ -474,7 +474,7 @@ def generate_expertise(df, groq_client=None,
                        top_words_col="Top 10 Words",
                        top_bigrams_col="Top 10 Bigrams",
                        top_trigrams_col="Top 10 Trigrams",
-                       subtopics_dict=None, max_workers=5):
+                       subtopics_dict=None, max_workers=2):
     if groq_client is None:
         groq_client = get_groq()
     if subtopics_dict is None:

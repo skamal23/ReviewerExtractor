@@ -69,7 +69,7 @@ def format_year(year):
         raise ValueError("Year must be an integer, float, or a string representing a year or a year range.")
 
 def ads_search(name=None, institution=None, year=None, refereed='property:notrefereed OR property:refereed', \
-               token=None, stop_dir=None, second_auth=False,groq_analysis=False):
+               token=None, stop_dir=None, second_auth=False,groq_analysis=True):
     
     final_df = pd.DataFrame()
     query_parts = []
@@ -136,7 +136,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
         data4 = n_grams(data3, stop_dir)
         if groq_analysis:
             print("Running Groq subtopics analysis on ADS results...")
-            data4 = generate_expertise(data4)
+            data4 = generate_expertise(data4, groq_client=get_groq())
             print("Groq analysis complete.")
         return data4
     else:
@@ -232,24 +232,6 @@ def get_user_input(dataframe):
     Returns:
         dict: Dictionary containing search parameters and search type
     """
-    """
-       # Detect available columns and build search options
-    available_searches = []
-    if 'Name' in dataframe.columns:
-        available_searches.append(("name", "Name Search - search by author name"))
-    if 'Institution' in dataframe.columns:
-        available_searches.append(("institution", "Institution Search - search by institution"))
-    if all(col in dataframe.columns for col in ['Name', 'Institution', 'Fellowship Year']):
-        available_searches.append(("fellow", "Fellow Search - search by name, institution, and year"))
-
-    # Display available options
-    print("\nAvailable columns:", ", ".join(dataframe.columns))
-    print("\nAvailable search types:")
-    for search_id, description in available_searches:
-        print(f"- {description}")
-
-    """
-    
     
     available_search_types = {
         "name": "Name Search - search by author name",
@@ -363,7 +345,7 @@ def run_file_search(filename, token, stop_dir):
                 token=token,
                 stop_dir=stop_dir,
                 second_auth=second_auth,
-                groq_analysis=search_params.get('groq_analysis', False)
+                groq_analysis=False
             )
             search_identifier = f"name: {name} (including {'second' if second_auth else 'only first'} author)"
 
@@ -377,7 +359,7 @@ def run_file_search(filename, token, stop_dir):
                 token=token,
                 stop_dir=stop_dir,
                 second_auth=second_auth,
-                groq_analysis=search_params.get('groq_analysis', False)
+                groq_analysis=False
             )
             data1['Input Institution'] = institution
             search_identifier = f"institution: {institution}"
@@ -395,7 +377,7 @@ def run_file_search(filename, token, stop_dir):
                 token=token,
                 stop_dir=stop_dir,
                 second_auth=second_auth,
-                groq_analysis=search_params.get('groq_analysis', False)
+                groq_analysis=False
             )
             data1['Input Institution'] = institution
             search_identifier = f"fellow: {name} at {institution} in {year}"
@@ -410,6 +392,10 @@ def run_file_search(filename, token, stop_dir):
             print(f"Completed {count} searches - Processed {search_identifier}")
         else:
             print(f"No results found for {search_identifier}")
-
+        
+    if search_params.get('groq_analysis', False) and not final_df.empty:
+        print("Running Groq subtopics analysis on aggregated ADS results...")
+        final_df = generate_expertise(final_df, groq_client=get_groq())
+        print("Groq analysis complete.")
     return final_df
 
