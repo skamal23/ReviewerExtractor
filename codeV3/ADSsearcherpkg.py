@@ -111,25 +111,25 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
 
     df = do_search(name, institution, token, encoded_query)
 
-    # Try affiliation instead of institution if the DataFrame is empty
-    if df.empty:
-        print('DataFrame is empty! Trying affiliation instead of institution.')
-        if institution:
-            query_parts = [f'pos(aff:"{institution}",1)']
-            if year:
-                query_parts.append(f'pubdate:{years}')
-            alt_query = " AND ".join(query_parts)
-            print(f"Trying alternative search: {alt_query}")
-            encoded_query = urlencode({
-                "q": query,
-                "fl": "title, first_author, bibcode, abstract, aff, pubdate, keyword,identifier",
-                "fq": "database:astronomy," + str(refereed),
-                "rows": 3000,
-                "sort": "date desc"
-            })
-            df = do_search(name, institution, token, encoded_query)
-
-    # Run further analysis if the DataFrame is not empty
+    if df.empty and institution:
+        print('DataFrame is empty! Trying alternative search using affiliation instead of institution.')
+        new_query_parts = []
+        for part in query_parts:
+            # Replace the institution clause with an affiliation clause
+            if f'pos(institution:"{institution}",1)' in part:
+                new_query_parts.append(f'pos(aff:"{institution}",1)')
+            else:
+                new_query_parts.append(part)
+        new_query = " AND ".join(new_query_parts)
+        print(f"Alternative query:\n{new_query}\n")
+        encoded_query = urlencode({
+            "q": new_query,
+            "fl": "title, first_author, bibcode, abstract, aff, pubdate, keyword,identifier",
+            "fq": "database:astronomy," + str(refereed),
+            "rows": 3000,
+            "sort": "date desc"
+        })
+        df = do_search(name, institution, token, encoded_query)
     if not df.empty:
         data2 = merge(df)
         data3 = data_type(data2)
@@ -161,7 +161,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
 
 
 def data_type(df):
-    journals = ['ApJ', 'MNRAS', 'AJ', 'Nature', 'Science', 'PASP', 'AAS', 'arXiv', 'SPIE', 'A&A', 'zndo','yCat','APh', 'PhRvL']
+    journals = ['ApJ','GCN','MNRAS', 'AJ', 'Nature', 'Science', 'PASP', 'AAS', 'arXiv', 'SPIE', 'A&A', 'zndo','yCat','APh', 'PhRvL']
     df['Data Type'] = ''
     for index, row in df.iterrows():
         bibcodes_str = row['Bibcode']
