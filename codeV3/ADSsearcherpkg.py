@@ -130,6 +130,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
             "sort": "date desc"
         })
         df = do_search(name, institution, token, encoded_query)
+
     if not df.empty:
         data2 = merge(df)
         data3 = data_type(data2)
@@ -224,41 +225,30 @@ def n_grams(df, directorypath):
 
 def get_user_input(dataframe):
     """
-    Gets user input for searching a dataframe, compatible with Jupyter notebooks.
+    Gets user input for searching a dataframe.
     
-    Args:
-        dataframe: pandas DataFrame containing the data to search
-        
-    Returns:
-        dict: Dictionary containing search parameters and search type
+    Returns a dictionary with search parameters for either a name or institution search.
     """
-    
     available_search_types = {
         "name": "Name Search - search by author name",
-        "institution": "Institution Search - search by institution",
-        "fellow": "Fellow Search - search by name, institution, and year"
+        "institution": "Institution Search - search by institution"
     }
     
     print("\nWhat type of search do you want to conduct?")
     for key, description in available_search_types.items():
         print(f"-Enter '{key}' for {description}")
     
-
-    # Get search type
     while True:
         try:
-            search_type = input("\nEnter search type: ('name', 'institution', or 'fellow'):\n").lower()
+            search_type = input("\nEnter search type: ('name' or 'institution'):\n").lower()
             if search_type in available_search_types:
                 break
-            print("Invalid search type. Please enter 'name', 'institution', or 'fellow'.")
+            print("Invalid search type. Please enter 'name' or 'institution'.")
         except NameError:
             print("Error getting input. Please try again.")
     
     print(f"You are running '{search_type}' search.\n")
-
-
     print("Listed are the available columns from your dataset:", ", ".join(dataframe.columns))
-    # Get relevant column names based on search type
     search_params = {'search_type': search_type}
     
     if search_type == 'name':
@@ -269,15 +259,13 @@ def get_user_input(dataframe):
         else:
             search_params['name_column'] = "Name"
         search_params['year_range'] = '[2003 TO 2030]'
-
-        # Second author search
         while True:
             include_second = input("Do you want to include search by second author? (y/n) [n]: ").strip().lower() or "n"
             if include_second in ["y", "n"]:
                 break
-            print("Invalid choice. Please enter 'y' for yes or 'n' for no.")
+            print("Invalid choice. Please enter 'y' or 'n'.")
         search_params['second_author'] = (include_second == "y")
-        
+    
     elif search_type == 'institution':
         inst_input = input("Enter the name of the column that contains the data for 'institution' search: ").strip()
         if inst_input:
@@ -287,55 +275,28 @@ def get_user_input(dataframe):
             search_params['institution_column'] = "Institution"
         search_params['year_range'] = '[2003 TO 2030]'
     
-    elif search_type == 'fellow':
-        name_input = input("Enter the name of the column that contains the data for 'name' search [Name]: ").strip()
-        inst_input = input("Enter the name of the column that contains the data for 'institution' search [Institution]: ").strip()
-        year_input = input("Enter the name of the column that contains the data for 'year' search [Fellowship Year]: ").strip()
-        if name_input:
-            matching_name = [col for col in dataframe.columns if col.lower() == name_input.lower()]
-            search_params['name_column'] = matching_name[0] if matching_name else "Name"
-        else:
-            search_params['name_column'] = "Name"
-
-        if inst_input:
-            matching_inst = [col for col in dataframe.columns if col.lower() == inst_input.lower()]
-            search_params['institution_column'] = matching_inst[0] if matching_inst else "Institution"
-        else:
-            search_params['institution_column'] = "Institution"
-
-        if year_input:
-            matching_year = [col for col in dataframe.columns if col.lower() == year_input.lower()]
-            search_params['year_column'] = matching_year[0] if matching_year else "Fellowship Year"
-        else:
-            search_params['year_column'] = "Fellowship Year"
     run_groq = input("Do you want to run Groq subtopics analysis on the ADS results? (y/n) [n]: ").strip().lower() or "n"
     search_params['groq_analysis'] = (run_groq == "y")
     return search_params
 
+
 def run_file_search(filename, token, stop_dir):
     """
-    Runs search based on user's choice of search type.
-
-    Args:
-        filename (str): Path to the input CSV file
-        token (str): ADS API token
-        stop_dir (str): Path to stopwords file
-
-    Returns:
-        pandas.DataFrame: Search results
+    Runs ADS search based on user's search type (name or institution).
+    
+    For institution searches, after the initial search we extract unique authors from the results
+    and re-run ADS search for each author with the institution filter.
+    Finally, if Groq analysis is requested, it is applied on the aggregated results.
     """
     dataframe = pd.read_csv(filename)
     final_df = pd.DataFrame()
     count = 0
-
-    # Get user's search preferences
     search_params = get_user_input(dataframe)
     print("Searching for results...")
     search_type = search_params['search_type']
-
-    for i in range(len(dataframe)):
-        if search_type == 'name':
-            # Name-only search
+    
+    if search_type == 'name':
+        for i in range(len(dataframe)):
             name = dataframe[search_params['name_column']][i]
             second_auth = search_params.get('second_author', False)
             data1 = ads_search(
@@ -348,54 +309,64 @@ def run_file_search(filename, token, stop_dir):
                 groq_analysis=False
             )
             search_identifier = f"name: {name} (including {'second' if second_auth else 'only first'} author)"
-
-        elif search_type == 'institution':
-            # Institution-only search
+            if not data1.empty:
+                data2 = merge(data1)
+                data3 = data_type(data2)
+                data4 = n_grams(data3, stop_dir)
+                final_df = pd.concat([final_df, data4], ignore_index=True)
+                count += 1
+                print(f"Completed {count} searches - Processed {search_identifier}")
+            else:
+                print(f"No results found for {search_identifier}")
+    
+    elif search_type == 'institution':
+        inst_results = []
+        for i in range(len(dataframe)):
             institution = dataframe[search_params['institution_column']][i]
-            data1 = ads_search(
+            data = ads_search(
                 name=None,
                 institution=institution,
                 year=search_params['year_range'],
                 token=token,
                 stop_dir=stop_dir,
-                second_auth=second_auth,
+                second_auth=False,
                 groq_analysis=False
             )
-            data1['Input Institution'] = institution
-            search_identifier = f"institution: {institution}"
-
-        elif search_type == 'fellow':
-            # Fellow search (name + institution + year)
-            name = dataframe[search_params['name_column']][i]
-            institution = dataframe[search_params['institution_column']][i]
-            year = str(int(dataframe[search_params['year_column']][i]))
-            
-            data1 = ads_search(
-                name=name,
+            if not data.empty:
+                inst_results.append(data)
+                print(f"Found {len(data)} records for institution: {institution}")
+            else:
+                print(f"No records found for institution: {institution}")
+        if not inst_results:
+            print("No institution search results found.")
+            return pd.DataFrame()
+        inst_df = pd.concat(inst_results, ignore_index=True)
+        unique_authors = inst_df["Input Author"].unique().tolist()
+        print(f"Unique authors from institution search: {unique_authors}")
+        author_results = []
+        for author in unique_authors:
+            print(f"Re-running ADS search for author: {author} with institution filter")
+            data_author = ads_search(
+                name=author,
                 institution=institution,
-                year=year,
+                year=search_params['year_range'],
                 token=token,
                 stop_dir=stop_dir,
-                second_auth=second_auth,
+                second_auth=False,
                 groq_analysis=False
             )
-            data1['Input Institution'] = institution
-            search_identifier = f"fellow: {name} at {institution} in {year}"
-
-        # Process results if found
-        if not data1.empty:
-            data2 = merge(data1)
-            data3 = data_type(data2)
-            data4 = n_grams(data3, stop_dir)
-            final_df = pd.concat([final_df, data4], ignore_index=True)
-            count += 1
-            print(f"Completed {count} searches - Processed {search_identifier}")
-        else:
-            print(f"No results found for {search_identifier}")
-        
+            if not data_author.empty:
+                author_results.append(data_author)
+        if not author_results:
+            print("No author-specific ADS results found after re-running search.")
+            return pd.DataFrame()
+        final_df = pd.concat(author_results, ignore_index=True)
+    
     if search_params.get('groq_analysis', False) and not final_df.empty:
         print("Running Groq subtopics analysis on aggregated ADS results...")
         final_df = generate_expertise(final_df, groq_client=get_groq())
         print("Groq analysis complete.")
+    
     return final_df
+
 
