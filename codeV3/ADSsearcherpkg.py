@@ -348,7 +348,7 @@ def run_file_search(filename, token, stop_dir):
             print(f"Re-running ADS search for author: {author} with institution filter")
             data_author = ads_search(
                 name=author,
-                institution=institution,
+                institution=None,
                 year=search_params['year_range'],
                 token=token,
                 stop_dir=stop_dir,
