@@ -18,4 +18,5 @@ Some files are needed to run the actual search, while others are utilized in pos
 - TextAnalysis.py: Python file that has all the functions in order to determine the top words, bigrams and trigrams in each publication.
 - stopwords.txt: Text file that has a list of the stop words for language processing. 
 - ADS_search.ipynb: A notebook that contains the different examples of how to use the ADSsearcherpkg functions with different input cases. These input cases include just an author, just an institution, and a csv file of 3 authors with their corresponding institutions.
+- LlamaModelV2.py: Python file that contains all the logic for author LLM subtopics analysis. Requires an API key for the LLM.
 
