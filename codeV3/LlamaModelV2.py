@@ -19,6 +19,7 @@ def string_to_list(x):
 def get_groq():
     return Groq()
 
+# List of subtopics
 d = {
     "physical data and processes": [
         "acceleration of particles",
