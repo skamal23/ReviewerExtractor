@@ -14,6 +14,11 @@ import pandas as pd
 
 
 def do_search(auth_name, inst, t, q):
+    """
+    Runs ADS search based on specified query built in ads_search.
+    
+    Returns a dataframe with the results of the search for a given author or institution.
+    """
     results = requests.get(
         "https://api.adsabs.harvard.edu/v1/search/query?{}".format(q),
         headers={'Authorization': 'Bearer ' + t}
@@ -70,7 +75,12 @@ def format_year(year):
 
 def ads_search(name=None, institution=None, year=None, refereed='property:notrefereed OR property:refereed', \
                token=None, stop_dir=None, second_auth=False,groq_analysis=True):
+    """
+    Builds a query for ADS search based on name, institution, year, second_author. Merges all results and optionally runs groq
+    subtopics analysis on the results. 
     
+    Returns a dictionary with all authors and corresponding publications that match the search query.
+    """
     final_df = pd.DataFrame()
     query_parts = []
     if name:
@@ -162,6 +172,11 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
 
 
 def data_type(df):
+    """
+    Determines whether at least half of the author's publications are in the specified list of journals. 
+    
+    Returns the dataframe with the 'Data Type' column added with the label 'Clean' or 'Dirty'. 
+    """
     journals = ['ApJ','GCN','MNRAS', 'AJ', 'Nature', 'Science', 'PASP', 'AAS', 'arXiv', 'SPIE', 'A&A', 'zndo','yCat','APh', 'PhRvL']
     df['Data Type'] = ''
     for index, row in df.iterrows():
@@ -170,13 +185,18 @@ def data_type(df):
         total_papers = len(bibcodes)
         clean_count = sum(any(journal in bibcode for journal in journals) for bibcode in bibcodes)
         if clean_count >= total_papers / 2:
-            data_type_label = 'Clean'
+            data_type_label = 'Clean' # More than half in the list of journals
         else:
             data_type_label = 'Dirty'
         df.at[index, 'Data Type'] = data_type_label
     return df
         
 def merge(df):
+    """
+    Merges all rows under the same author name and concatenates their results.
+    
+    Returns the resulting merged dataframe.
+    """
     df['Publication Date'] = df['Publication Date'].astype(str)
     df['Abstract'] = df['Abstract'].astype(str)
     df['Keywords'] = df['Keywords'].apply(lambda keywords: keywords if keywords else []) # <- Fix for Keywords
@@ -198,6 +218,11 @@ def merge(df):
     return merged
 
 def n_grams(df, directorypath):
+    """
+    Calculates the top words, bigrams, and trigrams for through an author's abstracts.
+    
+    Returns the dataframe including the top 10 words, bigrams, and trigrams.
+    """
     top10Dict = {'Top 10 Words': [],
                  'Top 10 Bigrams': [],
                  'Top 10 Trigrams': []}
@@ -294,7 +319,7 @@ def run_file_search(filename, token, stop_dir):
     search_params = get_user_input(dataframe)
     print("Searching for results...")
     search_type = search_params['search_type']
-    
+    # Name search logic, including second author logic
     if search_type == 'name':
         for i in range(len(dataframe)):
             name = dataframe[search_params['name_column']][i]
@@ -318,7 +343,7 @@ def run_file_search(filename, token, stop_dir):
                 print(f"Completed {count} searches - Processed {search_identifier}")
             else:
                 print(f"No results found for {search_identifier}")
-    
+    # Institutional search logic, reruns author list through ADS search to get all publications from an author
     elif search_type == 'institution':
         inst_results = []
         for i in range(len(dataframe)):
@@ -361,7 +386,7 @@ def run_file_search(filename, token, stop_dir):
             print("No author-specific ADS results found after re-running search.")
             return pd.DataFrame()
         final_df = pd.concat(author_results, ignore_index=True)
-    
+    # Run groq analysis on all search results 
     if search_params.get('groq_analysis', False) and not final_df.empty:
         print("Running Groq subtopics analysis on aggregated ADS results...")
         final_df = generate_expertise(final_df, groq_client=get_groq())
