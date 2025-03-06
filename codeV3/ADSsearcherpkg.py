@@ -74,7 +74,7 @@ def format_year(year):
         raise ValueError("Year must be an integer, float, or a string representing a year or a year range.")
 
 def ads_search(name=None, institution=None, year=None, refereed='property:notrefereed OR property:refereed', \
-               token=None, stop_dir=None, second_auth=False,groq_analysis=True):
+               token=None, stop_dir=None, second_auth=False,groq_analysis=True,deep_dive=False):
     """
     Builds a query for ADS search based on name, institution, year, second_author. Merges all results and optionally runs groq
     subtopics analysis on the results. 
@@ -140,6 +140,30 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
             "sort": "date desc"
         })
         df = do_search(name, institution, token, encoded_query)
+    
+    if institution and (not name or name.strip() == "") and deep_dive:
+        if not df.empty:
+            unique_authors = df["Input Author"].unique().tolist()
+            print(f"Unique authors from institution search: {unique_authors}")
+            author_results = []
+            for author in unique_authors:
+                print(f"Re-running ADS search for author: {author} without institutional constraint")
+                data_author = ads_search(
+                    name=author,
+                    institution=None,
+                    year=year,
+                    token=token,
+                    stop_dir=stop_dir,
+                    second_auth=second_auth,
+                    groq_analysis=False,
+                    deep_dive=False  
+                )
+                if not data_author.empty:
+                    author_results.append(data_author)
+            if not author_results:
+                print("No author-specific ADS results found after re-running search.")
+                return pd.DataFrame()
+            df = pd.concat(author_results, ignore_index=True)
 
     if not df.empty:
         data2 = merge(df)
