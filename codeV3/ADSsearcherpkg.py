@@ -141,7 +141,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
         })
         df = do_search(name, institution, token, encoded_query)
     
-    if institution and (not name or name.strip() == "") and deep_dive:
+    if institution and deep_dive:
         if not df.empty:
             unique_authors = df["Input Author"].unique().tolist()
             print(f"Unique authors from institution search: {unique_authors}")
@@ -307,7 +307,6 @@ def get_user_input(dataframe):
             search_params['name_column'] = matching_columns[0] if matching_columns else "Name"
         else:
             search_params['name_column'] = "Name"
-        search_params['year_range'] = '[2003 TO 2030]'
         while True:
             include_second = input("Do you want to include search by second author? (y/n) [n]: ").strip().lower() or "n"
             if include_second in ["y", "n"]:
@@ -322,7 +321,19 @@ def get_user_input(dataframe):
             search_params['institution_column'] = matching_columns[0] if matching_columns else "Institution"
         else:
             search_params['institution_column'] = "Institution"
-        search_params['year_range'] = '[2003 TO 2030]'
+        run_deep = input("Do you want to run a deep dive search (re-run for each author) for institution search? (y/n) [n]: ").strip().lower() or "n"
+        search_params['deep_dive'] = (run_deep == "y")
+    
+        
+    year_range = input("Enter the year range for your search (format: [YYYY TO YYYY] or a 4-digit year, default: [2003 TO 2030]): ").strip() or "[2003 TO 2030]"
+    search_params['year_range'] = year_range
+    
+    ref_input = input("Do you want refereed papers only? (y/n) [y]: ").strip().lower() or "y"
+    if ref_input == "y":
+        search_params['refereed'] = "property:refereed"
+    else:
+        search_params['refereed'] = "property:notrefereed OR property:refereed"
+    
     
     run_groq = input("Do you want to run Groq subtopics analysis on the ADS results? (y/n) [n]: ").strip().lower() or "n"
     search_params['groq_analysis'] = (run_groq == "y")
@@ -355,7 +366,9 @@ def run_file_search(filename, token, stop_dir):
                 token=token,
                 stop_dir=stop_dir,
                 second_auth=second_auth,
-                groq_analysis=False
+                groq_analysis=False,
+                deep_dive=False,
+                refereed=search_params.get('refereed')
             )
             search_identifier = f"name: {name} (including {'second' if second_auth else 'only first'} author)"
             if not data1.empty:
@@ -367,49 +380,24 @@ def run_file_search(filename, token, stop_dir):
                 print(f"Completed {count} searches - Processed {search_identifier}")
             else:
                 print(f"No results found for {search_identifier}")
-    # Institutional search logic, reruns author list through ADS search to get all publications from an author
     elif search_type == 'institution':
-        inst_results = []
-        for i in range(len(dataframe)):
-            institution = dataframe[search_params['institution_column']][i]
-            data = ads_search(
-                name=None,
-                institution=institution,
-                year=search_params['year_range'],
-                token=token,
-                stop_dir=stop_dir,
-                second_auth=False,
-                groq_analysis=False
-            )
-            if not data.empty:
-                inst_results.append(data)
-                print(f"Found {len(data)} records for institution: {institution}")
-            else:
-                print(f"No records found for institution: {institution}")
-        if not inst_results:
-            print("No institution search results found.")
-            return pd.DataFrame()
-        inst_df = pd.concat(inst_results, ignore_index=True)
-        unique_authors = inst_df["Input Author"].unique().tolist()
-        print(f"Unique authors from institution search: {unique_authors}")
-        author_results = []
-        for author in unique_authors:
-            print(f"Re-running ADS search for author: {author} with institution filter")
-            data_author = ads_search(
-                name=author,
-                institution=None,
-                year=search_params['year_range'],
-                token=token,
-                stop_dir=stop_dir,
-                second_auth=False,
-                groq_analysis=False
-            )
-            if not data_author.empty:
-                author_results.append(data_author)
-        if not author_results:
-            print("No author-specific ADS results found after re-running search.")
-            return pd.DataFrame()
-        final_df = pd.concat(author_results, ignore_index=True)
+        data = ads_search(
+            name=None,
+            institution=dataframe[search_params['institution_column']][0],
+            year=search_params['year_range'],
+            token=token,
+            stop_dir=stop_dir,
+            second_auth=False,
+            groq_analysis=False,
+            deep_dive=search_params.get('deep_dive', False),
+            refereed=search_params.get('refereed')
+        )
+        if not data.empty:
+            final_df = data
+            print(f"Processed institution search with deep_dive={search_params.get('deep_dive', False)}")
+        else:
+            print("No records found for the institution search.")
+    
     # Run groq analysis on all search results 
     if search_params.get('groq_analysis', False) and not final_df.empty:
         print("Running Groq subtopics analysis on aggregated ADS results...")
