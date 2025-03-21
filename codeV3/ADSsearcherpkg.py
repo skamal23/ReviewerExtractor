@@ -78,19 +78,25 @@ def format_year(year):
     else:
         raise ValueError("Year must be an integer, float, or a string representing a year or a year range.")
 
-def get_similar_institution(original, institutions_file="exceptions.xlsx", threshold=75):
+def get_similar_institution(original, institutions_file="exceptions.xlsx", threshold=60):
     """
-    Given an original institution name and a file containing the correct institution names,
-    returns the most similar correct institution name if the similarity score meets the threshold.
+    Given an original institution name and a file containing exception mappings,
+    first checks if the faulty name is present in the 'replace' column.
+    If found, returns the corresponding value from the 'replacement' column.
+    Otherwise, returns the most similar name from the 'replacement' column if the
+    similarity score meets the threshold.
     
-    The file can be an Excel or CSV file and must contain a column named "name".
+    The file can be an Excel or CSV file.
     """
     try:
         if institutions_file.lower().endswith(('.xlsx', '.xls')):
             df = pd.read_excel(institutions_file)
         else:
             df = pd.read_csv(institutions_file)
-        correct_names = df["name"].dropna().tolist()
+        exact_matches = df[df["replace"].astype(str).str.lower() == original.lower()]
+        if not exact_matches.empty:
+            return exact_matches.iloc[0]["replacement"]
+        correct_names = df["replacement"].dropna().tolist()
         best_match, score, _ = process.extractOne(original, correct_names, scorer=fuzz.ratio)
         if score >= threshold:
             return best_match
@@ -99,6 +105,7 @@ def get_similar_institution(original, institutions_file="exceptions.xlsx", thres
     except Exception as e:
         print("Error reading similar institution file:", e)
         return None
+
 
 
 def ads_search(name=None, institution=None, year=None, refereed='property:notrefereed OR property:refereed', \
