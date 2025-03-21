@@ -8,6 +8,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from LlamaModelV2 import generate_expertise, get_groq, string_to_list
+from rapidfuzz import process, fuzz
 
 
 import pandas as pd
@@ -23,6 +24,10 @@ def do_search(auth_name, inst, t, q):
         "https://api.adsabs.harvard.edu/v1/search/query?{}".format(q),
         headers={'Authorization': 'Bearer ' + t}
     )
+    json_data = results.json()
+    if "response" not in json_data:
+        print("ADS API error:", json_data)
+        return pd.DataFrame()
     data = results.json()["response"]["docs"]
     pdates = [d['pubdate'] for d in data]
     affiliations = [d['aff'][0] for d in data]
@@ -73,6 +78,29 @@ def format_year(year):
     else:
         raise ValueError("Year must be an integer, float, or a string representing a year or a year range.")
 
+def get_similar_institution(original, institutions_file="exceptions.xlsx", threshold=75):
+    """
+    Given an original institution name and a file containing the correct institution names,
+    returns the most similar correct institution name if the similarity score meets the threshold.
+    
+    The file can be an Excel or CSV file and must contain a column named "name".
+    """
+    try:
+        if institutions_file.lower().endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(institutions_file)
+        else:
+            df = pd.read_csv(institutions_file)
+        correct_names = df["name"].dropna().tolist()
+        best_match, score, _ = process.extractOne(original, correct_names, scorer=fuzz.ratio)
+        if score >= threshold:
+            return best_match
+        else:
+            return None
+    except Exception as e:
+        print("Error reading similar institution file:", e)
+        return None
+
+
 def ads_search(name=None, institution=None, year=None, refereed='property:notrefereed OR property:refereed', \
                token=None, stop_dir=None, second_auth=False,groq_analysis=True,deep_dive=False):
     """
@@ -85,7 +113,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
     query_parts = []
     if name:
         if second_auth:
-            query_parts.append(f'(pos(author:"^{name}",1) OR pos(author:"{name}",2))')
+            query_parts.append(f'(author:"^{name}" OR pos(author:"{name}",2))')
         else:
             query_parts.append(f'author:"^{name}"')
     if institution:
@@ -140,6 +168,28 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
             "sort": "date desc"
         })
         df = do_search(name, institution, token, encoded_query)
+        if df.empty:
+            similar_inst = get_similar_institution(institution, institutions_file="exceptions.xlsx")
+            if similar_inst:
+                print(f"DataFrame still empty! Finding from exception list: {similar_inst}")
+                new_query_parts = []
+                for part in query_parts:
+                    if f'pos(institution:"{institution}",1)' in part:
+                        new_query_parts.append(f'pos(institution:"{similar_inst}",1)')
+                    else:
+                        new_query_parts.append(part)
+                new_query = " AND ".join(new_query_parts)
+                print(f"Alternative query using exception list:\n{new_query}\n")
+                encoded_query = urlencode({
+                    "q": new_query,
+                    "fl": "title, first_author, bibcode, abstract, aff, pubdate, keyword, identifier",
+                    "fq": "database:astronomy," + str(refereed),
+                    "rows": 3000,
+                    "sort": "date desc"
+                })
+                df = do_search(name, similar_inst, token, encoded_query)
+            else:
+                print("No similar institution found using exception list")
     
     if institution and deep_dive:
         if not df.empty:
@@ -381,22 +431,30 @@ def run_file_search(filename, token, stop_dir):
             else:
                 print(f"No results found for {search_identifier}")
     elif search_type == 'institution':
-        data = ads_search(
-            name=None,
-            institution=dataframe[search_params['institution_column']][0],
-            year=search_params['year_range'],
-            token=token,
-            stop_dir=stop_dir,
-            second_auth=False,
-            groq_analysis=False,
-            deep_dive=search_params.get('deep_dive', False),
-            refereed=search_params.get('refereed')
-        )
-        if not data.empty:
-            final_df = data
+        inst_results = []
+        for i in range(len(dataframe)):
+            inst = dataframe[search_params['institution_column']][i]
+            print(f"Processing institution: {inst}")
+            data = ads_search(
+                name=None,
+                institution=inst,
+                year=search_params['year_range'],
+                token=token,
+                stop_dir=stop_dir,
+                second_auth=False,
+                groq_analysis=False,
+                deep_dive=search_params.get('deep_dive', False),
+                refereed=search_params.get('refereed')
+            )
+            if not data.empty:
+                inst_results.append(data)
+            else:
+                print(f"No records found for institution: {inst}")
+        if inst_results:
+            final_df = pd.concat(inst_results, ignore_index=True)
             print(f"Processed institution search with deep_dive={search_params.get('deep_dive', False)}")
         else:
-            print("No records found for the institution search.")
+            print("No records found for any institution search.")
     
     # Run groq analysis on all search results 
     if search_params.get('groq_analysis', False) and not final_df.empty:

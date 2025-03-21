@@ -5,6 +5,7 @@ from groq import Groq
 import concurrent.futures
 import os
 import itertools
+import time
 
 os.environ["GROQ_API_KEY"] = "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"
 
@@ -420,6 +421,9 @@ d = {
         "X-rays: stars"
     ]
 }
+import time
+import re
+import ast
 
 def process_row(idx, row, groq_client, prompt_template, dict_str, top_words_col, top_bigrams_col, top_trigrams_col):
     top_words = string_to_list(row.get(top_words_col, []))
@@ -437,39 +441,57 @@ def process_row(idx, row, groq_client, prompt_template, dict_str, top_words_col,
         top_trigrams=top_trigrams_str
     )
     
-    try:
-        response = groq_client.chat.completions.create(
-            model="llama3-70b-8192",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            max_tokens=300,
-            top_p=1,
-            stream=False
-        )
-        if hasattr(response.choices[0].message, 'content'):
-            response_text = response.choices[0].message.content.strip()
-        else:
-            response_text = "".join(chunk.choices[0].delta.content for chunk in response).strip()
-        
-        print(f"Raw response for row {idx}: {response_text}")
-        
-        if response_text.startswith("[") and response_text.endswith("]"):
-            list_str = response_text
-        else:
-            match = re.search(r'\[.*\]', response_text, re.DOTALL)
-            list_str = match.group(0) if match else "[]"
-        
+    max_retries = 5
+    default_delay = 30
+    
+    for attempt in range(max_retries):
         try:
-            subtopics_list = ast.literal_eval(list_str)
-            if not isinstance(subtopics_list, list):
+            response = groq_client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+                max_tokens=150, 
+                top_p=1,
+                stream=False
+            )
+            if hasattr(response.choices[0].message, 'content'):
+                response_text = response.choices[0].message.content.strip()
+            else:
+                response_text = "".join(chunk.choices[0].delta.content for chunk in response).strip()
+            
+            print(f"Raw response for row {idx}: {response_text}")
+            
+            if response_text.startswith("[") and response_text.endswith("]"):
+                list_str = response_text
+            else:
+                match = re.search(r'\[.*\]', response_text, re.DOTALL)
+                list_str = match.group(0) if match else "[]"
+            
+            try:
+                subtopics_list = ast.literal_eval(list_str)
+                if not isinstance(subtopics_list, list):
+                    subtopics_list = []
+            except Exception as parse_err:
+                print(f"Parsing error for row {idx}: {parse_err}")
                 subtopics_list = []
-        except Exception as parse_err:
-            print(f"Parsing error for row {idx}: {parse_err}")
-            subtopics_list = []
-    except Exception as e:
-        print(f"Error processing row {idx}: {e}")
-        subtopics_list = []
-    return idx, subtopics_list
+            
+            return idx, subtopics_list
+        
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "rate_limit_exceeded" in error_msg:
+                match = re.search(r"try again in ([\d\.]+)s", error_msg)
+                if match:
+                    delay = float(match.group(1)) + 2
+                else:
+                    delay = default_delay
+                print(f"Rate limit reached on row {idx}, attempt {attempt+1}/{max_retries}. Waiting {delay:.1f} seconds...")
+                time.sleep(delay)
+            else:
+                print(f"Error processing row {idx}: {e}")
+                break
+    
+    return idx, [] 
 
 def generate_expertise(df, groq_client=None,
                        top_words_col="Top 10 Words",
