@@ -9,7 +9,7 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from LlamaModelV2 import generate_expertise, get_groq, string_to_list
 from rapidfuzz import process, fuzz
-
+import time
 
 import pandas as pd
 
@@ -78,7 +78,7 @@ def format_year(year):
     else:
         raise ValueError("Year must be an integer, float, or a string representing a year or a year range.")
 
-def get_similar_institution(original, institutions_file="exceptions.xlsx", threshold=60):
+def get_similar_institution(original, institutions_file="exceptions.xlsx", threshold=75):
     """
     Given an original institution name and a file containing exception mappings,
     first checks if the faulty name is present in the 'replace' column.
