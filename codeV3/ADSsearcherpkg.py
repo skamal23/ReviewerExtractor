@@ -182,7 +182,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
                 new_query_parts = []
                 for part in query_parts:
                     if f'pos(institution:"{institution}",1)' in part:
-                        new_query_parts.append(f'pos(institution:"{similar_inst}",1)')
+                        new_query_parts.append(f'pos(aff:"{similar_inst}",1)')
                     else:
                         new_query_parts.append(part)
                 new_query = " AND ".join(new_query_parts)
@@ -195,6 +195,7 @@ def ads_search(name=None, institution=None, year=None, refereed='property:notref
                     "sort": "date desc"
                 })
                 df = do_search(name, similar_inst, token, encoded_query)
+                df["Input Institution"] = institution
             else:
                 print("No similar institution found using exception list")
     
