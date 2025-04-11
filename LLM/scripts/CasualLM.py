@@ -8,7 +8,7 @@ from transformers import (
     pipeline
 )
 import logging
-import TextAnalysis as TA # Assumed to contain n-gram functions
+import utils.text_analysis as TA # Assumed to contain n-gram functions
 from langchain import LLMChain, HuggingFacePipeline, PromptTemplate
 from typing import Union, List
 

@@ -10,7 +10,7 @@ import fnmatch
 import requests
 import io
 from PyPDF2 import PdfReader
-from TextAnalysis import stopword_loader, count_words, topwords, topbigrams, toptrigrams  # Custom module
+from utils.text_analysis import stopword_loader, count_words, topwords, topbigrams, toptrigrams  # Custom module
 from typing import List, Union
 import logging
 from marker.converters.pdf import PdfConverter
