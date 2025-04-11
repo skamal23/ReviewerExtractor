@@ -20,10 +20,10 @@ from CasualLM import setup_model, extract_summary
 from pathlib import Path
 
 # Directory Configuration (matching your existing structure)
-CONTENT_DIR = Path("./content")
-SUMMARIES_DIR = Path("./summaries")
-MODELS_DIR = Path("./models")
-MARKER_DIR = Path("./marker_markdown")  # New directory for Marker markdown
+CONTENT_DIR = Path("/nobackup/skkamal/content")
+SUMMARIES_DIR = Path("/nobackup/skkamal/summaries")
+MODELS_DIR = Path("/nobackup/{username}/models")
+MARKER_DIR = Path("/nobackup/skkamal/marker_markdown")  # New directory for Marker markdown
 
 for directory in [CONTENT_DIR, SUMMARIES_DIR, MODELS_DIR, MARKER_DIR]:
     directory.mkdir(exist_ok=True)

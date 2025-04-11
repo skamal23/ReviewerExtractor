@@ -13,7 +13,6 @@ import logging
 import torch
 import concurrent.futures
 import pandas as pd
-from generate_config import save_model_config, load_model_config
 
 username = "ielhaime"
 models = [
@@ -22,7 +21,7 @@ models = [
     # Add more models here...
 ]
 
-base_dir = f"./models"
+base_dir = f"/nobackup/{username}/models"
 
 def download_models(models: list, base_dir: str) -> None:
     """

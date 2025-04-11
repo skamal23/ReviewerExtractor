@@ -36,13 +36,13 @@ def setup_logging():
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('model_processing.log'),
+            logging.FileHandler('/nobackup/skkamal/logs/model_processing.log'),
             logging.StreamHandler()
         ]
     )
     return logging.getLogger(__name__)
 
-def setup_model(model_path: str = "./models/Llama-3.1-8B") -> LLMChain:
+def setup_model(model_path: str = "/nobackup/{username}/models/Llama-3.1-8B") -> LLMChain:
     """
     Function: setup_model
 
@@ -53,7 +53,7 @@ def setup_model(model_path: str = "./models/Llama-3.1-8B") -> LLMChain:
 
     Args:
         model_path (str, optional): The path to the pre-trained LLM model directory. Defaults to 
-                                    "./models/Llama-3.1-8B".
+                                    "/nobackup/{username}/models/Llama-3.1-8B".
 
     Returns:
         LLMChain: A Langchain LLMChain object, ready to use for generating summaries.  This object encapsulates 
