@@ -268,13 +268,13 @@ if __name__ == "__main__":
     nltk.download('punkt')
     nltk.download('wordnet')
     
-    csv_file = 'small_identifier_sample.csv'  # Replace with your CSV file
-    stopwords_file = 'stopwords.txt' # Path to your stopword file
+    csv_file = './data/small_identifier_sample.csv'  # Replace with your CSV file
+    stopwords_file = './data/stopwords.txt' # Path to your stopword file
 
     processed_df = process_csv(csv_file, stopwords_file)
 
     if processed_df is not None:
-        output_filename = 'combined_output.csv'
+        output_filename = './data/combined_output.csv'
         processed_df.to_csv(output_filename, index=False)
         logger.info(f"Results saved to {output_filename}")
     else:
