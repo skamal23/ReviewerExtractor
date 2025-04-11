@@ -7,10 +7,17 @@ from transformers import (
     AutoModelForCausalLM, 
     pipeline
 )
+import sys
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 import logging
 import utils.text_analysis as TA # Assumed to contain n-gram functions
-from langchain import LLMChain, HuggingFacePipeline, PromptTemplate
-from typing import Union, List
+from langchain.chains import LLMChain
+from langchain.llms.huggingface_pipeline import HuggingFacePipeline
+from langchain.prompts import PromptTemplate
+
+from typing import Union, List,Dict
 
 """
 Module: ADS_CasualLM.ipynb

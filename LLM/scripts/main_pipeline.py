@@ -10,7 +10,17 @@ import fnmatch
 import requests
 import io
 from PyPDF2 import PdfReader
-from utils.text_analysis import stopword_loader, count_words, topwords, topbigrams, toptrigrams  # Custom module
+import os
+import sys
+
+# Add the parent directory of the current script's directory to sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Now you can import modules from the sibling directory
+from utils.text_analysis import stopword_loader, count_words, topwords, topbigrams, toptrigrams
+
 from typing import List, Union
 import logging
 from marker.converters.pdf import PdfConverter
@@ -19,11 +29,13 @@ from marker.output import text_from_rendered
 from CasualLM import setup_model, extract_summary
 from pathlib import Path
 
+
+username = "skkamal"
 # Directory Configuration (matching your existing structure)
-CONTENT_DIR = Path("/nobackup/skkamal/content")
-SUMMARIES_DIR = Path("/nobackup/skkamal/summaries")
-MODELS_DIR = Path("/nobackup/{username}/models")
-MARKER_DIR = Path("/nobackup/skkamal/marker_markdown")  # New directory for Marker markdown
+CONTENT_DIR = Path(f"/nobackup/{username}/content")
+SUMMARIES_DIR = Path(f"/nobackup/{username}/summaries")
+MODELS_DIR = Path(f"/nobackup/{username}/models")
+MARKER_DIR = Path(f"/nobackup/{username}/marker_markdown")  # New directory for Marker markdown
 
 for directory in [CONTENT_DIR, SUMMARIES_DIR, MODELS_DIR, MARKER_DIR]:
     directory.mkdir(exist_ok=True)
@@ -279,3 +291,4 @@ if __name__ == "__main__":
         logger.info(f"Results saved to {output_filename}")
     else:
         logger.error("CSV processing failed.")
+
