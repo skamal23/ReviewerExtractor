@@ -134,39 +134,6 @@ def get_summary(arxiv_id: str) -> Union[str, None]:
     return get_arxiv_text(arxiv_id)
 '''
 
-def download_arxiv_pdf(arxiv_id: str) -> Path:
-    """
-    Downloads PDF from arXiv and saves it to CONTENT_DIR.
-    Maintains your existing file structure.
-    
-    Args:
-        arxiv_id (str): The arXiv ID
-        
-    Returns:
-        Path: Path to the downloaded PDF file
-    """
-    arxiv_id = arxiv_id.split('arXiv:')[-1]
-    pdf_path = CONTENT_DIR / f"{arxiv_id}.pdf"
-    
-    if pdf_path.exists():
-        logger.info(f"PDF already exists: {pdf_path}")
-        return pdf_path
-        
-    url = f'https://arxiv.org/pdf/{arxiv_id}.pdf'
-    try:
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-        
-        with open(pdf_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        logger.info(f"Successfully downloaded: {pdf_path}")
-        return pdf_path
-    except Exception as e:
-        logger.error(f"Error downloading PDF {url}: {e}")
-        return None
-
-
 def process_pdf_with_marker(pdf_path: Path) -> str:
     """
     Process a PDF using Marker instead of the previous clean_text function.
@@ -194,7 +161,7 @@ def process_pdf_with_marker(pdf_path: Path) -> str:
         return None
 
 
-def process_csv(csv_filepath: str, stopwords_path: str, use_local_pdfs: bool = False) -> pd.DataFrame:
+def process_csv(csv_filepath: str, stopwords_path: str) -> pd.DataFrame:
     """
     Function: process_csv
 
@@ -206,7 +173,6 @@ def process_csv(csv_filepath: str, stopwords_path: str, use_local_pdfs: bool = F
         csv_filepath (str): Path to the input CSV file.  Must contain an 'Identifier' column with a list of 
                             arXiv IDs in string format (e.g., "['arXiv:1234.5678', 'arXiv:9876.5432']").
         stopwords_path (str): Path to the stopwords file for n-gram analysis.
-        use_local_pdfs (bool): Whether to use local PDFs instead of downloading from arXiv.
 
     Returns:
         pd.DataFrame: The processed DataFrame with added columns for summaries and n-grams.  Returns None if 
@@ -219,7 +185,7 @@ def process_csv(csv_filepath: str, stopwords_path: str, use_local_pdfs: bool = F
         df['topbigrams'] = ""
         df['toptrigrams'] = ""
         llm_chain = setup_model()
-        stopwords = stopword_loader(stopwords_path) # Assumed function from TextAnalysis
+        stopwords = stopword_loader(stopwords_path)
 
         for index, row in df.iterrows():
             arxiv_ids_str = row['Identifier']
@@ -227,10 +193,7 @@ def process_csv(csv_filepath: str, stopwords_path: str, use_local_pdfs: bool = F
                 arxiv_ids = eval(arxiv_ids_str)
                 all_summaries = []
                 for arxiv_id in arxiv_ids:
-                    if use_local_pdfs:
-                        pdf_path = Path("/nobackup/skkamal/papers") / f"{arxiv_id.split('arXiv:')[-1]}.pdf"
-                    else:
-                        pdf_path = download_arxiv_pdf(arxiv_id)
+                    pdf_path = Path("/nobackup/skkamal/papers") / f"{arxiv_id.split('arXiv:')[-1]}.pdf"
                     
                     if pdf_path and pdf_path.exists():
                         processed_text = process_pdf_with_marker(pdf_path)
@@ -244,14 +207,8 @@ def process_csv(csv_filepath: str, stopwords_path: str, use_local_pdfs: bool = F
                             summary_path = SUMMARIES_DIR / f"SUM_{arxiv_id}.txt"
                             with open(summary_path, 'w', encoding='utf-8') as f:
                                 f.write(summary)
-                        if not use_local_pdfs:
-                            try:
-                                pdf_path.unlink()
-                                logger.info(f"Deleted PDF: {pdf_path}")
-                            except Exception as e:
-                                logger.error(f"Error deleting PDF {pdf_path}: {e}")
                     else:
-                        logger.warning(f"Failed to download PDF for {arxiv_id}")
+                        logger.warning(f"Failed to find PDF for {arxiv_id}")
 
                 if all_summaries:  # If we have any summaries
                     df.loc[index, 'summaries'] = all_summaries
